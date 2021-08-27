@@ -104,6 +104,8 @@ def main(parser):
 
     loss_hist = collections.deque(maxlen=500)
 
+    wandb.watch(retinanet)
+
     retinanet.train()
     retinanet.module.freeze_bn()
 
