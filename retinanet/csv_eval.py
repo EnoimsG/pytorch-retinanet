@@ -5,7 +5,7 @@ import json
 import os
 import matplotlib.pyplot as plt
 import torch
-
+import wandb
 
 
 def compute_overlap(a, b):
@@ -155,7 +155,8 @@ def evaluate(
     iou_threshold=0.5,
     score_threshold=0.05,
     max_detections=100,
-    save_path=None
+    save_path=None,
+    epoch=None
 ):
     """ Evaluate a given dataset using a given retinanet.
     # Arguments
@@ -239,7 +240,8 @@ def evaluate(
         print('{}: {}'.format(label_name, average_precisions[label][0]))
         print("Precision: ",precision[-1])
         print("Recall: ",recall[-1])
-        
+        wandb.log({'label': label_name, 'average_precision': average_precisions[label][0], 'precision': precision[-1], 'recall': recall[-1]}, step=epoch)
+
         if save_path!=None:
             plt.plot(recall,precision)
             # naming the x axis 
@@ -251,7 +253,7 @@ def evaluate(
             plt.title('Precision Recall curve') 
 
             # function to show the plot
-            plt.savefig(save_path+'/'+label_name+'_precision_recall.jpg')
+            plt.savefig(os.path.join(save_path, label_name + '_precision_recall.jpg'))
 
 
 

@@ -1,8 +1,11 @@
 import argparse
 import collections
+import os
 
 import numpy as np
 
+import pickle
+import wandb
 import torch
 import torch.optim as optim
 from torchvision import transforms
@@ -20,19 +23,14 @@ assert torch.__version__.split('.')[0] == '1'
 print('CUDA available: {}'.format(torch.cuda.is_available()))
 
 
-def main(args=None):
-    parser = argparse.ArgumentParser(description='Simple training script for training a RetinaNet network.')
+def main(parser):
+    model_save_dir = os.path.join(parser.outputdir, 'weights')
+    if os.path.exists(model_save_dir):
+        os.mkdir(model_save_dir)
 
-    parser.add_argument('--dataset', help='Dataset type, must be one of csv or coco.')
-    parser.add_argument('--coco_path', help='Path to COCO directory')
-    parser.add_argument('--csv_train', help='Path to file containing training annotations (see readme)')
-    parser.add_argument('--csv_classes', help='Path to file containing class list (see readme)')
-    parser.add_argument('--csv_val', help='Path to file containing validation annotations (optional, see readme)')
-
-    parser.add_argument('--depth', help='Resnet depth, must be one of 18, 34, 50, 101, 152', type=int, default=50)
-    parser.add_argument('--epochs', help='Number of epochs', type=int, default=100)
-
-    parser = parser.parse_args(args)
+    val_results_save_dir = os.path.join(parser.outputdir, 'val_results')
+    if os.path.exists(val_results_save_dir):
+        os.mkdir(val_results_save_dir)
 
     # Create the data loaders
     if parser.dataset == 'coco':
@@ -148,7 +146,7 @@ def main(args=None):
                 print(
                     'Epoch: {} | Iteration: {} | Classification loss: {:1.5f} | Regression loss: {:1.5f} | Running loss: {:1.5f}'.format(
                         epoch_num, iter_num, float(classification_loss), float(regression_loss), np.mean(loss_hist)))
-
+                wandb.log({'epoch': epoch_num, 'iteration': iter_num, 'classification_loss': classification_loss, 'regression_loss': regression_loss})
                 del classification_loss
                 del regression_loss
             except Exception as e:
@@ -165,16 +163,34 @@ def main(args=None):
 
             print('Evaluating dataset')
 
-            mAP = csv_eval.evaluate(dataset_val, retinanet)
+            mAP = csv_eval.evaluate(dataset_val, retinanet, save_path=val_results_save_dir, epoch=epoch_num)
+            with open(os.path.join(val_results_save_dir, str(epoch_num) + '_map.pickle'), 'wb') as handle:
+                pickle.dump(mAP, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
         scheduler.step(np.mean(epoch_loss))
 
-        torch.save(retinanet.module, '{}_retinanet_{}.pt'.format(parser.dataset, epoch_num))
+        if epoch_num > 35 or epoch_num % 10 == 0:
+            torch.save(retinanet.module, os.path.join(model_save_dir, '{}_retinanet_{}.pt'.format(parser.dataset, epoch_num)))
 
     retinanet.eval()
 
-    torch.save(retinanet, 'model_final.pt')
+    torch.save(retinanet, os.path.join(model_save_dir, 'model_final.pt'))
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description='Simple training script for training a RetinaNet network.')
+
+    parser.add_argument('--wandb_project', required=True)
+    parser.add_argument('--dataset', help='Dataset type, must be one of csv or coco.')
+    parser.add_argument('--coco_path', help='Path to COCO directory')
+    parser.add_argument('--csv_train', help='Path to file containing training annotations (see readme)')
+    parser.add_argument('--csv_classes', help='Path to file containing class list (see readme)')
+    parser.add_argument('--csv_val', help='Path to file containing validation annotations (optional, see readme)')
+
+    parser.add_argument('--depth', help='Resnet depth, must be one of 18, 34, 50, 101, 152', type=int, default=50)
+    parser.add_argument('--epochs', help='Number of epochs', type=int, default=100)
+    parser.add_argument('--outputdir', required=True, type=str)
+
+    args = parser.parse_args()
+    with wandb.init(project=args.wandb_project, save_code=True):
+        main(args)
