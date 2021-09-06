@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="ce887c62-4c03-4b4c-abfa-a22b48d3d646" name="micc-3 (harlock)">
+        <fileTransfer rootFolder="/home/sgori" accessType="SFTP" host="150.217.35.234" port="22" sshConfigId="1e31e0d0-b193-4524-b2b0-efbc839e3fcf" sshConfig="sgori@150.217.35.234:22 agent" authAgent="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

@@ -9,10 +9,15 @@ from argparse import ArgumentParser
 import cv2
 
 label_map = {
-    'Person': 1,
-    'Car': 3
+    '1': 'person',
+    '2': 'bicycle',
+    '3': 'car'
 }
 
+fake_label_map = {
+    'Car': 'car',
+    'Person': 'person'
+}
 
 def process_real_imgs(config):
     json_files = [f for f in os.listdir(config.real_labels_dir) if f.endswith('.json')]
@@ -27,13 +32,15 @@ def process_real_imgs(config):
             result.append({'path': parsed_json['image']['file_name'] + '.jpeg'})
         else:
             for a in annotations:
+                if a['category_id'] not in ['1', '2', '3']:
+                    continue
                 x1 = int(a['bbox'][0])
                 x2 = x1 + int(a['bbox'][2])
                 y1 = int(a['bbox'][1])
                 y2 = y1 + int(a['bbox'][3])
                 result.append(
                     {'path': parsed_json['image']['file_name'] + '.jpeg', 'x1': x1,
-                     'x2': x2, 'y1': y1, 'y2': y2, 'category': a['category_id']})
+                     'x2': x2, 'y1': y1, 'y2': y2, 'category': label_map[a['category_id']]})
     return result
 
 
@@ -74,10 +81,10 @@ def get_label(track):
     if not label_attrib:
         label_name = track.attrib['name']
         if label_name == 'Suzuki_Swift':  # Inconsistency in FLIR00039 dataset
-            return label_map['Car']
+            return 'car'
         else:
             raise Exception('Unrecognized label')
-    return label_map[label_attrib]
+    return fake_label_map[label_attrib]
 
 
 def get_annotations_xml_from_folder(folder):
@@ -100,14 +107,14 @@ def process_fake_imgs(config):
 
 
 def create_mixed_exp(config):
-    real_annot = process_real_imgs(config)
+    #real_annot = process_real_imgs(config)
     fake_annot = process_fake_imgs(config)
-    with open('flir.csv', 'w') as f:
-        for e in real_annot:
-            f.write(os.path.join(config.final_real_path, e['path'])
-                    + ',' + str(e.get('x1', '')) + ',' + str(e.get('y1', '')) + ',' + str(
-                        e.get('x2', '')) + ',' + str(e.get('y2', '')) + ',' + str(e.get('category', '')) + '\n')
-    with open('improved.csv', 'w') as f:
+    # with open('flir.csv', 'w') as f:
+    #     for e in real_annot:
+    #         f.write(os.path.join(config.final_real_path, e['path'])
+    #                 + ',' + str(e.get('x1', '')) + ',' + str(e.get('y1', '')) + ',' + str(
+    #                     e.get('x2', '')) + ',' + str(e.get('y2', '')) + ',' + str(e.get('category', '')) + '\n')
+    with open('improved_both.csv', 'w') as f:
         for e in fake_annot:
             f.write(os.path.join(config.final_fake_path, e['path'])
                     + ',' + str(e.get('x1', '')) + ',' + str(e.get('y1', '')) + ',' + str(
