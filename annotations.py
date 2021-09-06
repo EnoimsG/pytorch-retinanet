@@ -63,10 +63,11 @@ def process_fake_dataset(folder, name, config, processed):
                 x2 = round(float(d.attrib['xbr']))
                 y1 = round(float(d.attrib['ytl']))
                 y2 = round(float(d.attrib['ybr']))
+                dataset_img_name = img_name.replace('.jpg', '.png')
                 if x1 + x2 == 0 and x1 - x2 == 0:
-                    results.append({'path': img_name})
+                    results.append({'path': dataset_img_name})
                 else:
-                    results.append({'path': img_name, 'x1': x1, 'x2': x2, 'y1': y1, 'y2': y2,
+                    results.append({'path': dataset_img_name, 'x1': x1, 'x2': x2, 'y1': y1, 'y2': y2,
                                     'category': get_label(track)})
     return results, i
 
