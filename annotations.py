@@ -19,6 +19,7 @@ fake_label_map = {
     'Person': 'person'
 }
 
+
 def process_real_imgs(config):
     json_files = [f for f in os.listdir(config.real_labels_dir) if f.endswith('.json')]
     result = []
@@ -44,11 +45,13 @@ def process_real_imgs(config):
     return result
 
 
-def process_fake_dataset(folder, name, config, processed):
+def process_fake_dataset(folder, name, avaiable_fake_imgs):
     dataset_annotations = get_annotations_xml_from_folder(folder)
     img_dir = os.path.join(folder, name + '_insert')
     results = []
     for i, img_name in enumerate(os.listdir(img_dir)):
+        if img_name.split('.')[0] not in avaiable_fake_imgs:
+            continue
         # if processed + i >= config.n_fake_imgs:
         #    break
         frame_number = '{:05d}'.format(int(img_name.split("_")[3].split(".")[0]))
@@ -98,28 +101,34 @@ def process_fake_imgs(config):
     elements = [e for e in os.listdir(config.fake_dir) if e.startswith("FLIR")]
     results = []
     processed = 0
+    avaiable_fake_imgs = [i.split('.')[0] for i in os.listdir(config.avaiable_fake_img_dir)]
     for e in elements:
         if e == 'FLIR00498':
             continue
-        r, new_processed = process_fake_dataset(os.path.join(config.fake_dir, e), e, config, processed)
+        r, new_processed = process_fake_dataset(os.path.join(config.fake_dir, e), e, avaiable_fake_imgs)
         processed += new_processed
         results.extend(r)
     return results
 
 
 def create_mixed_exp(config):
-    #real_annot = process_real_imgs(config)
+    real_annot = process_real_imgs(config)
     fake_annot = process_fake_imgs(config)
-    # with open('flir.csv', 'w') as f:
-    #     for e in real_annot:
-    #         f.write(os.path.join(config.final_real_path, e['path'])
-    #                 + ',' + str(e.get('x1', '')) + ',' + str(e.get('y1', '')) + ',' + str(
-    #                     e.get('x2', '')) + ',' + str(e.get('y2', '')) + ',' + str(e.get('category', '')) + '\n')
+    with open('flir.csv', 'w') as f:
+        for e in real_annot:
+            f.write(os.path.join(config.final_real_path, e['path'])
+                    + ',' + str(e.get('x1', '')) + ',' + str(e.get('y1', '')) + ',' + str(
+                e.get('x2', '')) + ',' + str(e.get('y2', '')) + ',' + str(e.get('category', '')) + '\n')
     with open('improved_both.csv', 'w') as f:
         for e in fake_annot:
-            f.write(os.path.join(config.final_fake_path, e['path'])
+            f.write(os.path.join(config.final_fake_path_both, e['path'])
                     + ',' + str(e.get('x1', '')) + ',' + str(e.get('y1', '')) + ',' + str(
-                        e.get('x2', '')) + ',' + str(e.get('y2', '')) + ',' + str(e.get('category', '')) + '\n')
+                e.get('x2', '')) + ',' + str(e.get('y2', '')) + ',' + str(e.get('category', '')) + '\n')
+    with open('improved_masked.csv', 'w') as f:
+        for e in fake_annot:
+            f.write(os.path.join(config.final_fake_path_masked, e['path'])
+                    + ',' + str(e.get('x1', '')) + ',' + str(e.get('y1', '')) + ',' + str(
+                e.get('x2', '')) + ',' + str(e.get('y2', '')) + ',' + str(e.get('category', '')) + '\n')
 
 
 if __name__ == "__main__":
@@ -132,8 +141,11 @@ if __name__ == "__main__":
     create_parser.add_argument('--fake_dir', type=str, required=True, help='Contains both real and fake')
     create_parser.add_argument('--final_real_path', required=True,
                                default='/equilibrium/sgori/dataset/FLIR_Dataset/FLIR_Dataset/training/Data')
-    create_parser.add_argument('--final_fake_path',
+    create_parser.add_argument('--final_fake_path_both',
                                default='/equilibrium/sgori/dataset/improved_dataset_annotations/')
+    create_parser.add_argument('--final_fake_path_masked',
+                               default='/equilibrium/sgori/dataset/improved_dataset_annotations/')
+    create_parser.add_argument('--avaiable_fake_img_dir', type=str, required=True)
     create_parser.set_defaults(func=create_mixed_exp)
 
     args = parser.parse_args()

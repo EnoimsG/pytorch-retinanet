@@ -15,6 +15,19 @@
           </excludedPaths>
         </serverdata>
       </paths>
+      <paths name="micc-4 (lechuck)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/retinanet" local="$PROJECT_DIR$" web="/" />
+            <mapping local="" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/experiments" />
+            <excludedPath local="true" path="$PROJECT_DIR$/images" />
+            <excludedPath local="true" path="$PROJECT_DIR$/wandb" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
     </serverData>
   </component>
 </project>
