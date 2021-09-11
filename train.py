@@ -25,11 +25,11 @@ print('CUDA available: {}'.format(torch.cuda.is_available()))
 
 def main(parser):
     model_save_dir = os.path.join(parser.outputdir, 'weights')
-    if os.path.exists(model_save_dir):
+    if not os.path.exists(model_save_dir):
         os.mkdir(model_save_dir)
 
     val_results_save_dir = os.path.join(parser.outputdir, 'val_results')
-    if os.path.exists(val_results_save_dir):
+    if not os.path.exists(val_results_save_dir):
         os.mkdir(val_results_save_dir)
 
     # Create the data loaders

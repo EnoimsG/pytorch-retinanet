@@ -97,11 +97,11 @@ def get_annotations_xml_from_folder(folder):
     return tree.getroot()
 
 
-def process_fake_imgs(config):
+def process_fake_imgs(config, avaiable_imgs_path):
     elements = [e for e in os.listdir(config.fake_dir) if e.startswith("FLIR")]
     results = []
     processed = 0
-    avaiable_fake_imgs = [i.split('.')[0] for i in os.listdir(config.avaiable_fake_img_dir)]
+    avaiable_fake_imgs = [i.split('.')[0] for i in os.listdir(avaiable_imgs_path)]
     for e in elements:
         if e == 'FLIR00498':
             continue
@@ -113,19 +113,20 @@ def process_fake_imgs(config):
 
 def create_mixed_exp(config):
     real_annot = process_real_imgs(config)
-    fake_annot = process_fake_imgs(config)
+    fake_annot_both = process_fake_imgs(config, config.avaiable_fake_img_dir_both)
+    fake_annot_masked = process_fake_imgs(config, config.avaiable_fake_img_dir_masked)
     with open('flir.csv', 'w') as f:
         for e in real_annot:
             f.write(os.path.join(config.final_real_path, e['path'])
                     + ',' + str(e.get('x1', '')) + ',' + str(e.get('y1', '')) + ',' + str(
                 e.get('x2', '')) + ',' + str(e.get('y2', '')) + ',' + str(e.get('category', '')) + '\n')
     with open('improved_both.csv', 'w') as f:
-        for e in fake_annot:
+        for e in fake_annot_both:
             f.write(os.path.join(config.final_fake_path_both, e['path'])
                     + ',' + str(e.get('x1', '')) + ',' + str(e.get('y1', '')) + ',' + str(
                 e.get('x2', '')) + ',' + str(e.get('y2', '')) + ',' + str(e.get('category', '')) + '\n')
     with open('improved_masked.csv', 'w') as f:
-        for e in fake_annot:
+        for e in fake_annot_masked:
             f.write(os.path.join(config.final_fake_path_masked, e['path'])
                     + ',' + str(e.get('x1', '')) + ',' + str(e.get('y1', '')) + ',' + str(
                 e.get('x2', '')) + ',' + str(e.get('y2', '')) + ',' + str(e.get('category', '')) + '\n')
@@ -145,8 +146,13 @@ if __name__ == "__main__":
                                default='/equilibrium/sgori/dataset/improved_dataset_annotations/')
     create_parser.add_argument('--final_fake_path_masked',
                                default='/equilibrium/sgori/dataset/improved_dataset_annotations/')
-    create_parser.add_argument('--avaiable_fake_img_dir', type=str, required=True)
+    create_parser.add_argument('--avaiable_fake_img_dir_both', type=str, required=True)
+    create_parser.add_argument('--avaiable_fake_img_dir_masked', type=str, required=True)
     create_parser.set_defaults(func=create_mixed_exp)
+
+    # create_test = subparsers.add_parser('extract-test')
+    # create_test.add_argument('--test_img_dir', required=True)
+    # create_parser.set_defaults(func=create_test)
 
     args = parser.parse_args()
     args.func(args)

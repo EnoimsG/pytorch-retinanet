@@ -55,14 +55,41 @@ def create_experiment(config):
                 f.write(a['path'] + ',' + str(a.get('x1', '')) + ',' + str(a.get('y1', '')) + ',' + str(
                     a.get('x2', '')) + ',' + str(a.get('y2', '')) + ',' + str(a.get('category', '')))
 
+def setup_test(config):
+    exp_path = os.path.join(config.basedir, config.name)
+    if not os.path.isdir(exp_path):
+        print('Experiment directory doesn\'t exist: ', exp_path)
+        exit()
+    test_file = os.path.join(exp_path, 'test.csv')
+    if os.path.isfile(test_file):
+        print('Test file already exists for this experiment')
+        exit()
+    with open(test_file, 'w') as f:
+        for img in os.listdir(config.folder_test):
+            f.write(os.path.join(config.folder_test, img) + '\n')
+        f.close()
+    print('Created test file: ', test_file)
+
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="Extract annotations for RetinaNET")
-    parser.add_argument('--real_img_csv', required=True)
-    parser.add_argument('--fake_img_csv', required=True)
-    parser.add_argument('--basedir', required=True)
-    parser.add_argument('--exp_name', required=True)
-    parser.add_argument('--n_val_size', required=True, type=int)
-    parser.add_argument('--n_real_imgs', required=True, type=int)
-    parser.add_argument('--n_fake_imgs', required=True, type=int)
-    create_experiment(parser.parse_args())
+    subparsers = parser.add_subparsers()
+
+    create_subparser = subparsers.add_parser('create')
+    create_subparser.add_argument('--real_img_csv', required=True)
+    create_subparser.add_argument('--fake_img_csv', required=True)
+    create_subparser.add_argument('--basedir', required=True)
+    create_subparser.add_argument('--exp_name', required=True)
+    create_subparser.add_argument('--n_val_size', required=True, type=int)
+    create_subparser.add_argument('--n_real_imgs', required=True, type=int)
+    create_subparser.add_argument('--n_fake_imgs', required=True, type=int)
+    create_subparser.set_defaults(func=create_experiment)
+
+    setup_test_subparser = subparsers.add_parser('setup-test')
+    setup_test_subparser.add_argument('--exp_name', required=True)
+    setup_test_subparser.add_argument('--basedir', default='experiments', help='The base experiments directory')
+    setup_test_subparser.add_argument('--test_img_path', required=True)
+    setup_test_subparser.set_defaults(func=setup_test)
+
+    args = parser.parse_args()
+    args.func(args)
