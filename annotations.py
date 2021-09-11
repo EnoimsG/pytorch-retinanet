@@ -69,6 +69,8 @@ def process_fake_dataset(folder, name, avaiable_fake_imgs):
                 dataset_img_name = img_name.replace('.jpg', '.png')
                 if x1 + x2 == 0 and x1 - x2 == 0:
                     results.append({'path': dataset_img_name})
+                elif x1 == x2 or y1 == y2:
+                    continue
                 else:
                     results.append({'path': dataset_img_name, 'x1': x1, 'x2': x2, 'y1': y1, 'y2': y2,
                                     'category': get_label(track)})
