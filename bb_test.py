@@ -1,7 +1,7 @@
 import cv2
 
 def main():
-    f = open('flir_local.csv')
+    f = open('test.csv')
     for l in f.readlines():
         path,x1, y1, x2, y2,classid = l.split(',')
         img = cv2.imread(path)

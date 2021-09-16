@@ -19,14 +19,40 @@ fake_label_map = {
     'Person': 'person'
 }
 
-
-def process_real_imgs(config):
-    json_files = [f for f in os.listdir(config.real_labels_dir) if f.endswith('.json')]
+def process_real_imgs_test(annotations_dir):
+    json_files = [f for f in os.listdir(annotations_dir) if f.endswith('.json')]
     result = []
     for i, json_file in enumerate(json_files):
         # if i >= config.n_real_imgs:
         #    break
-        f = open(os.path.join(config.real_labels_dir, json_file), 'r')
+        f = open(os.path.join(annotations_dir, json_file), 'r')
+        parsed_json = json.load(f)
+        annotations = parsed_json['annotation']
+        if len(annotations) == 0:
+            result.append({'path': parsed_json['image']['file_name'] + '.jpeg'})
+        else:
+            for a in annotations:
+                if a['category_id'] not in ['1', '2', '3']:
+                    continue
+                x1 = int(a['bbox'][0])
+                x2 = x1 + int(a['bbox'][2])
+                y1 = int(a['bbox'][1])
+                y2 = y1 + int(a['bbox'][3])
+                if x1 == x2 or y1 == y2:
+                    continue
+                result.append(
+                    {'path': json_file.split('.')[0] + '.jpeg', 'x1': x1,
+                     'x2': x2, 'y1': y1, 'y2': y2, 'category': label_map[a['category_id']]})
+    return result
+
+
+def process_real_imgs(annotations_dir):
+    json_files = [f for f in os.listdir(annotations_dir) if f.endswith('.json')]
+    result = []
+    for i, json_file in enumerate(json_files):
+        # if i >= config.n_real_imgs:
+        #    break
+        f = open(os.path.join(annotations_dir, json_file), 'r')
         parsed_json = json.load(f)
         annotations = parsed_json['annotation']
         if len(annotations) == 0:
@@ -114,7 +140,7 @@ def process_fake_imgs(config, avaiable_imgs_path):
 
 
 def create_mixed_exp(config):
-    real_annot = process_real_imgs(config)
+    real_annot = process_real_imgs(config.real_labels_dir)
     fake_annot_both = process_fake_imgs(config, config.avaiable_fake_img_dir_both)
     fake_annot_masked = process_fake_imgs(config, config.avaiable_fake_img_dir_masked)
     with open('flir.csv', 'w') as f:
@@ -130,6 +156,14 @@ def create_mixed_exp(config):
     with open('improved_masked.csv', 'w') as f:
         for e in fake_annot_masked:
             f.write(os.path.join(config.final_fake_path_masked, e['path'])
+                    + ',' + str(e.get('x1', '')) + ',' + str(e.get('y1', '')) + ',' + str(
+                e.get('x2', '')) + ',' + str(e.get('y2', '')) + ',' + str(e.get('category', '')) + '\n')
+
+def create_test(config):
+    annot = process_real_imgs_test(config.test_labels_path)
+    with open('test.csv', 'w') as f:
+        for e in annot:
+            f.write(os.path.join(config.test_img_path, e['path'])
                     + ',' + str(e.get('x1', '')) + ',' + str(e.get('y1', '')) + ',' + str(
                 e.get('x2', '')) + ',' + str(e.get('y2', '')) + ',' + str(e.get('category', '')) + '\n')
 
@@ -152,9 +186,10 @@ if __name__ == "__main__":
     create_parser.add_argument('--avaiable_fake_img_dir_masked', type=str, required=True)
     create_parser.set_defaults(func=create_mixed_exp)
 
-    # create_test = subparsers.add_parser('extract-test')
-    # create_test.add_argument('--test_img_dir', required=True)
-    # create_parser.set_defaults(func=create_test)
+    create_test_parser = subparsers.add_parser('extract-test')
+    create_test_parser.add_argument('--test_labels_path', required=True)
+    create_test_parser.add_argument('--test_img_path', required=True)
+    create_test_parser.set_defaults(func=create_test)
 
     args = parser.parse_args()
     args.func(args)

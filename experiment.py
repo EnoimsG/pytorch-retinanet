@@ -56,7 +56,7 @@ def create_experiment(config):
                     a.get('x2', '')) + ',' + str(a.get('y2', '')) + ',' + str(a.get('category', '')))
 
 def setup_test(config):
-    exp_path = os.path.join(config.basedir, config.name)
+    exp_path = os.path.join(config.basedir, config.exp_name)
     if not os.path.isdir(exp_path):
         print('Experiment directory doesn\'t exist: ', exp_path)
         exit()
@@ -65,8 +65,8 @@ def setup_test(config):
         print('Test file already exists for this experiment')
         exit()
     with open(test_file, 'w') as f:
-        for img in os.listdir(config.folder_test):
-            f.write(os.path.join(config.folder_test, img) + '\n')
+        for img in os.listdir(config.test_img_path):
+            f.write(os.path.join(config.test_img_path, img) + '\n')
         f.close()
     print('Created test file: ', test_file)
 

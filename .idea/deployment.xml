@@ -1,7 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" remoteFilesAllowedToDisappearOnAutoupload="false">
+  <component name="PublishConfigData" autoUpload="Always" remoteFilesAllowedToDisappearOnAutoupload="false">
     <serverData>
+      <paths name="micc-1 (nikita)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/retinanet" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="" local="" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/weights" />
+            <excludedPath local="true" path="$PROJECT_DIR$/wandb" />
+            <excludedPath local="true" path="$PROJECT_DIR$/images" />
+            <excludedPath local="true" path="$PROJECT_DIR$/experiments" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
       <paths name="micc-3 (harlock)">
         <serverdata>
           <mappings>
@@ -12,6 +26,7 @@
             <excludedPath local="true" path="$PROJECT_DIR$/experiments" />
             <excludedPath local="true" path="$PROJECT_DIR$/wandb" />
             <excludedPath local="true" path="$PROJECT_DIR$/images" />
+            <excludedPath local="true" path="$PROJECT_DIR$/weights" />
           </excludedPaths>
         </serverdata>
       </paths>
@@ -29,5 +44,6 @@
         </serverdata>
       </paths>
     </serverData>
+    <option name="myAutoUpload" value="ALWAYS" />
   </component>
 </project>
