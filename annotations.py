@@ -29,7 +29,7 @@ def process_real_imgs_test(annotations_dir):
         parsed_json = json.load(f)
         annotations = parsed_json['annotation']
         if len(annotations) == 0:
-            result.append({'path': parsed_json['image']['file_name'] + '.jpeg'})
+            result.append({'path': json_file.split('.')[0] + '.jpeg'})
         else:
             for a in annotations:
                 if a['category_id'] not in ['1', '2', '3']:

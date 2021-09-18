@@ -1,11 +1,11 @@
 import argparse
 import os
 
-import torch
-import wandb
 import numpy as np
+import torch
 from torchvision import transforms
 
+import wandb
 from retinanet import csv_eval
 from retinanet.dataloader import CSVDataset, Resizer, Normalizer
 
@@ -41,40 +41,37 @@ def validate_one(args, model_path):
 
     aps, results = csv_eval.evaluate(dataset_val, retinanet, iou_threshold=float(args.iou_threshold), test=True)
     print("results: ", results)
-    if args.all:
-        return results
+    return results
 
 
-def validate_all(config):
-    for exp_name in os.listdir(config.exp_dir):
-        results = []
-        weights_path = os.path.join(config.exp_dir, exp_name, 'weights')
-        for w_file in os.listdir(weights_path):
-            if 'final' in w_file: # already included
-                continue
-            epoch_results = validate_one(config, os.path.join(weights_path, w_file))
-            for er in epoch_results:
-                results.append({'epoch': int(w_file.split('_')[2].split('.')[0]), 'class': er['label'],
-                                'ap': er['ap'], 'noccur': er['na']})
-        e = {}
-        for r in results:
-            if r['epoch'] not in e:
-                e[r['epoch']] = []
-            e[r['epoch']].append(r['ap'])
-        maps = {}
-        for k, v in e.items():
-            maps[k] = np.mean(v)
+def validate_and_send(config):
+    results = []
+    weights_path = os.path.join(config.exp_dir, 'weights')
+    for w_file in os.listdir(weights_path):
+        if 'final' in w_file:  # already included
+            continue
+        epoch_results = validate_one(config, os.path.join(weights_path, w_file))
+        for er in epoch_results:
+            results.append({'epoch': int(w_file.split('_')[2].split('.')[0]), 'class': er['label'],
+                            'ap': er['ap'], 'noccur': er['na']})
+    e = {}
+    for r in results:
+        if r['epoch'] not in e:
+            e[r['epoch']] = []
+        e[r['epoch']].append(r['ap'])
+    maps = {}
+    for k, v in e.items():
+        maps[k] = np.mean(v)
 
-        flatten_results = []
-        for r in results:
-            flatten_results.append([r['epoch'], r['class'], r['ap'], r['noccur'], maps[r['epoch']]])
-        run_name = exp_name
-        run = wandb.init(project=config.wandb_name, config={'exp_name': 'results_' + run_name})
-        wandb.run.name = 'results_' + run_name
-        wandb.run.save()
-        result_table = wandb.Table(columns=["epoch", "class", "ap", "noccur", "map"], data=flatten_results)
-        wandb.log({'results': result_table})
-
+    flatten_results = []
+    for r in results:
+        flatten_results.append([r['epoch'], r['class'], r['ap'], r['noccur'], maps[r['epoch']]])
+    run_name = os.path.basename(os.path.normpath(config.exp_dir))
+    run = wandb.init(project=config.wandb_name, config={'exp_name': 'results_' + run_name})
+    wandb.run.name = 'results_' + run_name
+    wandb.run.save()
+    result_table = wandb.Table(columns=["epoch", "class", "ap", "noccur", "map"], data=flatten_results)
+    wandb.log({'results': result_table})
 
 
 if __name__ == '__main__':
@@ -90,7 +87,4 @@ if __name__ == '__main__':
     parser.add_argument('--class_list_path', help='Path to classlist csv', type=str)
     parser.add_argument('--iou_threshold', help='IOU threshold used for evaluation', type=str, default='0.5')
     args = parser.parse_args()
-    if not args.all:
-        validate_one(args, args.model_path)
-    else:
-        validate_all(args)
+    validate_and_send(args)
