@@ -24,6 +24,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="/experiments_results_csv/retinanet-synththerm-mixed.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="/flir.csv">
           <value>
             <Attribute>
