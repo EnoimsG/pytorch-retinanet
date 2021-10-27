@@ -176,12 +176,12 @@ if __name__ == "__main__":
     create_parser.add_argument('--real_img_dir', type=str, required=True)
     create_parser.add_argument('--real_labels_dir', type=str, required=True)
     create_parser.add_argument('--fake_dir', type=str, required=True, help='Contains both real and fake')
-    create_parser.add_argument('--final_real_path', required=True,
-                               default='/equilibrium/sgori/dataset/FLIR_Dataset/FLIR_Dataset/training/Data')
+    create_parser.add_argument('--final_real_path',
+                               default='/data/equilibrium/sgori/dataset/FLIR_Dataset/FLIR_Dataset/training/images/')
     create_parser.add_argument('--final_fake_path_both',
-                               default='/equilibrium/sgori/dataset/improved_dataset_annotations/')
+                               default='/data/equilibrium/sgori/dataset/fake_both/images/')
     create_parser.add_argument('--final_fake_path_masked',
-                               default='/equilibrium/sgori/dataset/improved_dataset_annotations/')
+                               default='/data/equilibrium/sgori/dataset/improved_dataset_annotations/')
     create_parser.add_argument('--avaiable_fake_img_dir_both', type=str, required=True)
     create_parser.add_argument('--avaiable_fake_img_dir_masked', type=str, required=True)
     create_parser.set_defaults(func=create_mixed_exp)
