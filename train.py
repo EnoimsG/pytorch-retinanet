@@ -15,7 +15,6 @@ from retinanet import csv_eval
 from retinanet import model
 from retinanet.dataloader import CocoDataset, CSVDataset, collater, Resizer, AspectRatioBasedSampler, Augmenter, \
     Normalizer
-from s3_persistance import S3
 
 assert torch.__version__.split('.')[0] == '1'
 
@@ -108,8 +107,6 @@ def main(parser):
     retinanet.train()
     retinanet.module.freeze_bn()
 
-    s3 = S3()
-
     print('Num training images: {}'.format(len(dataset_train)))
 
     for epoch_num in range(parser.epochs):
@@ -177,7 +174,6 @@ def main(parser):
             fname = '{}_retinanet_{}.pt'.format(parser.dataset, epoch_num)
             fpath = os.path.join(model_save_dir, fname)
             torch.save(retinanet.module, fpath)
-            s3.put(fpath, os.path.join(args.wandb_project, args.run_name), fname)
 
     retinanet.eval()
 

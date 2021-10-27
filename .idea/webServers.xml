@@ -10,9 +10,16 @@
         </fileTransfer>
       </webServer>
       <webServer id="091031d0-5367-4f88-8342-7a3ec5f1f8fb" name="micc-4 (lechuck)">
-        <fileTransfer rootFolder="/home/sgori" accessType="SFTP" host="150.217.35.232" port="22" sshConfigId="d37efb82-1cc1-4880-89a0-ec03331b13e8" sshConfig="sgori@150.217.35.232:22 agent" authAgent="true">
+        <fileTransfer rootFolder="/home/sgori" accessType="SFTP" sshConfigId="d37efb82-1cc1-4880-89a0-ec03331b13e8" sshConfig="sgori@150.217.35.232:22 agent">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+      <webServer id="d27cbea2-f3aa-4cac-8b87-97f533e6532c" name="micc - solaris">
+        <fileTransfer rootFolder="/home/sgori" accessType="SFTP" host="solaris.micc.unifi.it" port="22" sshConfigId="881a2664-525a-4566-ad9c-df595d1f3b12" sshConfig="micc-solaris" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>
         </fileTransfer>
       </webServer>
