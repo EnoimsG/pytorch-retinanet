@@ -23,6 +23,13 @@
           </advancedOptions>
         </fileTransfer>
       </webServer>
+      <webServer id="3a8ea322-9528-4213-9625-b2d2a5b87c58" name="micc - 2">
+        <fileTransfer rootFolder="/home/sgori" accessType="SFTP" host="150.217.35.236" port="22" sshConfigId="9984d646-7a81-4e17-b6ba-014b0ec6ea4d" sshConfig="micc-ultron" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
     </option>
   </component>
 </project>

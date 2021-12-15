@@ -156,6 +156,9 @@ class CSVDataset(Dataset):
             raise(ValueError('invalid CSV annotations file: {}: {}'.format(self.train_file, e)))
         self.image_names = list(self.image_data.keys())
 
+    def get_image_names(self):
+        return self.image_names
+
     def _parse(self, value, function, fmt):
         """
         Parse a string into a value, and format a nice ValueError if it fails.

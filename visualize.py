@@ -30,6 +30,7 @@ def main(args=None):
 	parser.add_argument('--coco_path', help='Path to COCO directory')
 	parser.add_argument('--csv_classes', help='Path to file containing class list (see readme)')
 	parser.add_argument('--csv_val', help='Path to file containing validation annotations (optional, see readme)')
+	parser.add_argument('--result_dir', required=True, help='Path to file containing validation annotations (optional, see readme)')
 
 	parser.add_argument('--model', help='Path to model (.pt) file.')
 
@@ -38,14 +39,14 @@ def main(args=None):
 	if parser.dataset == 'coco':
 		dataset_val = CocoDataset(parser.coco_path, set_name='train2017', transform=transforms.Compose([Normalizer(), Resizer()]))
 	elif parser.dataset == 'csv':
-		dataset_val = CSVDataset(train_file=parser.csv_train, class_list=parser.csv_classes, transform=transforms.Compose([Normalizer(), Resizer()]))
+		dataset_val = CSVDataset(train_file=parser.csv_val, class_list=parser.csv_classes, transform=transforms.Compose([Normalizer(), Resizer()]))
 	else:
 		raise ValueError('Dataset type not understood (must be csv or coco), exiting.')
 
 	sampler_val = AspectRatioBasedSampler(dataset_val, batch_size=1, drop_last=False)
 	dataloader_val = DataLoader(dataset_val, num_workers=1, collate_fn=collater, batch_sampler=sampler_val)
 
-	retinanet = torch.load(parser.model)
+	retinanet = torch.load(parser.model, map_location=torch.device('cpu'))
 
 	use_gpu = True
 
@@ -71,6 +72,7 @@ def main(args=None):
 	for idx, data in enumerate(dataloader_val):
 
 		with torch.no_grad():
+			img_name = os.path.basename(dataset_val.get_image_names()[idx]).split('.')[0]
 			st = time.time()
 			if torch.cuda.is_available():
 				scores, classification, transformed_anchors = retinanet(data['img'].cuda().float())
@@ -87,6 +89,7 @@ def main(args=None):
 
 			img = cv2.cvtColor(img.astype(np.uint8), cv2.COLOR_BGR2RGB)
 
+			file_txt = open(os.path.join(parser.result_dir, 'labels', img_name), 'w')
 			for j in range(idxs[0].shape[0]):
 				bbox = transformed_anchors[idxs[0][j], :]
 				x1 = int(bbox[0])
@@ -98,9 +101,11 @@ def main(args=None):
 
 				cv2.rectangle(img, (x1, y1), (x2, y2), color=(0, 0, 255), thickness=2)
 				print(label_name)
-
-			cv2.imshow('img', img)
-			cv2.waitKey(0)
+				file_txt.write(str(int(classification[idxs[0][j]])) + " " + str(x1) + " " + str(y1) + " " + str(x2) + " " + str(y2) + "\n")
+			file_txt.close()
+			#cv2.imwrite(os.path.join(parser.result_dir, 'images', img_name + ".jpg"), img)
+			# cv2.imshow('img', img)
+			# cv2.waitKey(0)
 
 
 
